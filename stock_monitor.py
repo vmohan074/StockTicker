@@ -50,7 +50,7 @@ def main():
             alert_msg = f"{ticker}: {sign}{pct_change:.2f}% ({current:.2f} from {previous:.2f})"
             # If underperforming (negative change), get Groq analysis
             if groq_client and current < previous:
-                user_prompt = f"In 10-20 words, why might {ticker} be underperforming today? Use only public news and market factors."
+                user_prompt = f"In 20-40 words, why might {ticker} be underperforming today? Use only recent public news and market factors."
                 messages_payload = [
                     {"role": "system", "content": "You are a helpful and very concise assistant."},
                     {"role": "user", "content": user_prompt}
