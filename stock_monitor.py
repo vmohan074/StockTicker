@@ -52,7 +52,7 @@ def main():
             if groq_client and current < previous:
                 user_prompt = f"For {ticker}, report the single, specific news event or market factor (e.g., earnings miss, downgrade, block deal, macro event) driving today's underperformance. State the reason and its short-term nature (Fundamental/Non-Fundamental). Limit the entire answer to 50 words."
                 messages_payload = [
-                    {"role": "system", "content": "You are an Emergency Market Analyst. Your sole function is to perform rapid, high-priority root cause analysis for sudden stock price drops. You must be concise, accurate, and focus on events within the last 24-48 hours. Your output MUST ONLY contain the structured analysis; absolutely no greetings, introductory text, or conversational filler. If you cannot determine a reason based on public information, respond with 'No significant public information available.'"},
+                    {"role": "system", "content": "You are an Emergency Market Analyst. Your sole function is to perform rapid, high-priority root cause analysis for sudden stock price drops. You must be concise, accurate, and focus on events within the last 24-72 hours. Your output MUST ONLY contain the structured analysis; absolutely no greetings, introductory text, or conversational filler. If you cannot determine a reason based on public information, respond with 'No significant public information available.'"},
                     {"role": "user", "content": user_prompt}
                 ]
                 try:
@@ -65,10 +65,10 @@ def main():
                     alert_msg += f"\n {groq_reason}"
                 except Exception as e:
                     alert_msg += f"\nReason: (Groq error: {e})"
-            alerts.append(alert_msg)
+            alerts.append(f"\n{alert_msg}")
 
     if alerts:
-        title = "StockPulse ⚡ High Volatility Alert"
+        title = "StockPulse ⚡ Alert"
         message = '\n'.join(alerts)
         send_pushover_notification(title, message, config)
 
