@@ -4,8 +4,8 @@ import yfinance as yf
 import sys
 import os
 import google.generativeai as genai
-from dotenv import load_dotenv
-load_dotenv()
+#from dotenv import load_dotenv
+#load_dotenv()
 
 def read_config(config_path='config.ini'):
     config = configparser.ConfigParser()
