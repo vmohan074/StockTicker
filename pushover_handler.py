@@ -12,4 +12,8 @@ def send_pushover_notification(title, message, config):
         'message': message
     }
     response = requests.post(url, data=payload)
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError:
+        print('Pushover error:', response.text)
+        raise

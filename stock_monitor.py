@@ -2,6 +2,8 @@ import configparser
 from pushover_handler import send_pushover_notification
 import yfinance as yf
 import sys
+import os
+from groq import Groq
 
 
 def read_config(config_path='config.ini'):
@@ -31,6 +33,13 @@ def main():
     threshold = float(config['SETTINGS']['volatility_threshold'])
     alerts = []
 
+    # Set Groq API key from environment variable only (for GitHub Actions security)
+    groq_api_key = os.getenv('GROQ_API_KEY')
+    if groq_api_key:
+        groq_client = Groq()
+    else:
+        groq_client = None
+
     for ticker in tickers:
         current, previous = get_stock_data(ticker)
         if current is None or previous is None:
@@ -38,7 +47,25 @@ def main():
         pct_change = calculate_percentage_change(current, previous)
         if pct_change >= threshold:
             sign = '+' if current > previous else '-'
-            alerts.append(f"{ticker}: {sign}{pct_change:.2f}% ({current:.2f} from {previous:.2f})")
+            alert_msg = f"{ticker}: {sign}{pct_change:.2f}% ({current:.2f} from {previous:.2f})"
+            # If underperforming (negative change), get Groq analysis
+            if groq_client and current < previous:
+                user_prompt = f"In 10-20 words, why might {ticker} be underperforming today? Use only public news and market factors."
+                messages_payload = [
+                    {"role": "system", "content": "You are a helpful and very concise assistant."},
+                    {"role": "user", "content": user_prompt}
+                ]
+                try:
+                    chat_completion = groq_client.chat.completions.create(
+                        messages=messages_payload,
+                        model="llama-3.1-8b-instant",
+                        temperature=0.7
+                    )
+                    groq_reason = chat_completion.choices[0].message.content.strip()
+                    alert_msg += f"\nReason: {groq_reason}"
+                except Exception as e:
+                    alert_msg += f"\nReason: (Groq error: {e})"
+            alerts.append(alert_msg)
 
     if alerts:
         title = "StockPulse ⚡ High Volatility Alert"
