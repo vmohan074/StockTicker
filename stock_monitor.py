@@ -62,9 +62,10 @@ def main():
             alerts.append(f"\n{alert_msg}")
 
     if alerts:
-        title = "StockPulse ⚡ Alert"
+        title = "StockPulse ⚡ Alerts"
         message = '\n'.join(alerts)
         send_pushover_notification(title, message, config)
 
 if __name__ == "__main__":
     main()
+
