@@ -62,7 +62,7 @@ def main():
                         temperature=0.7
                     )
                     groq_reason = chat_completion.choices[0].message.content.strip()
-                    alert_msg += f"\nReason: {groq_reason}"
+                    alert_msg += f"\n {groq_reason}"
                 except Exception as e:
                     alert_msg += f"\nReason: (Groq error: {e})"
             alerts.append(alert_msg)
