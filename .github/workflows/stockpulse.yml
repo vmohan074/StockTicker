@@ -19,6 +19,6 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install dependencies
-        run: pip install yfinance requests
+        run: pip install yfinance requests groq
       - name: Run monitor
         run: python stock_monitor.py
