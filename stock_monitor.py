@@ -50,9 +50,9 @@ def main():
             alert_msg = f"{ticker}: {sign}{pct_change:.2f}% ({current:.2f} from {previous:.2f})"
             # If underperforming (negative change), get Groq analysis
             if groq_client and current < previous:
-                user_prompt = f"In 20-40 words, why might {ticker} be underperforming today? Use only recent public news and market factors."
+                user_prompt = f"For {ticker}, report the single, specific news event or market factor (e.g., earnings miss, downgrade, block deal, macro event) driving today's underperformance. State the reason and its short-term nature (Fundamental/Non-Fundamental). Limit the entire answer to 50 words."
                 messages_payload = [
-                    {"role": "system", "content": "You are a helpful and very concise assistant."},
+                    {"role": "system", "content": "You are an Emergency Market Analyst. Your sole function is to perform rapid, high-priority root cause analysis for sudden stock price drops. You must be concise, accurate, and focus on events within the last 24-48 hours. Your output MUST ONLY contain the structured analysis; absolutely no greetings, introductory text, or conversational filler. If you cannot determine a reason based on public information, respond with 'No significant public information available.'"},
                     {"role": "user", "content": user_prompt}
                 ]
                 try:
