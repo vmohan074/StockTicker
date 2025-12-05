@@ -2,7 +2,7 @@ name: StockPulse Monitor
 
 on:
   schedule:
-    - cron: '30 5 * * *' # 11:00 AM IST (5:30 UTC)
+    - cron: '30 6 * * *' # 12:00 PM IST (5:30 UTC)
   workflow_dispatch:
 
 jobs:
