@@ -28,6 +28,47 @@ def calculate_percentage_change(current, previous):
     return abs((current - previous) / previous) * 100
 
 
+def analyze_with_groq(groq_client, ticker, percentage_change):
+    """Generate concise analysis using Groq AI with improved prompting"""
+    try:
+        # Improved prompt - more specific and constrained
+        user_prompt = f"""Indian stock {ticker} dropped {abs(percentage_change):.2f}% today.
+
+Task: Explain in ONE sentence (max 25 words) the most likely market reason.
+Focus on: sector trends, company news, or market-wide factors.
+Format: "Likely due to [specific reason]."
+Do NOT speculate or use phrases like "might be" or "could be"."""
+
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a financial analyst specializing in Indian stock markets (NSE/BSE). Provide factual, concise explanations only."
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt
+                }
+            ],
+            max_tokens=50,
+            temperature=0.3,
+            top_p=0.9
+        )
+        
+        result = response.choices[0].message.content.strip()
+        
+        # Filter out garbage responses
+        garbage_phrases = ["i don't have", "i cannot", "as an ai", "no specific information", "i'm not able"]
+        if any(phrase in result.lower() for phrase in garbage_phrases):
+            return "Market volatility affected this stock today."
+        
+        return result
+        
+    except Exception as e:
+        return f"Analysis unavailable: {str(e)}"
+
+
 def main():
     config = read_config()
     tickers = [t.strip() for t in config['STOCKS']['tickers'].split(',')]
@@ -51,18 +92,8 @@ def main():
             alert_msg = f"{ticker}: {sign}{pct_change:.2f}% ({current:.2f} from {previous:.2f})"
             # If underperforming (negative change), get Groq analysis
             if groq_client and current < previous:
-                user_prompt = f"For {ticker}, report the single, specific news event or market factor (e.g., earnings miss, downgrade, block deal, macro event) driving today's underperformance. Limit the entire answer to 40 words."
-                try:
-                    response = groq_client.chat.completions.create(
-                        model="llama-3.3-70b-versatile",
-                        messages=[{"role": "user", "content": user_prompt}],
-                        max_tokens=100,
-                        temperature=0.7
-                    )
-                    groq_reason = response.choices[0].message.content.strip()
-                    alert_msg += f"\n {groq_reason}"
-                except Exception as e:
-                    alert_msg += f"\nReason: (Groq error: {e})"
+                groq_reason = analyze_with_groq(groq_client, ticker, pct_change)
+                alert_msg += f"\n {groq_reason}"
             alerts.append(f"\n{alert_msg}")
 
     if alerts:
