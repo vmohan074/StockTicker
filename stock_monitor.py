@@ -34,7 +34,7 @@ def analyze_with_groq(groq_client, ticker, percentage_change):
         # Improved prompt - more specific and constrained
         user_prompt = f"""Indian stock {ticker} dropped {abs(percentage_change):.2f}% today.
 
-Task: Explain in ONE sentence (max 25 words) the most likely market reason.
+Task: Explain in sentence (max 50 words) the most likely market reason.
 Focus on: sector trends, company news, or market-wide factors.
 Format: "Likely due to [specific reason]."
 Do NOT speculate or use phrases like "might be" or "could be"."""
@@ -97,9 +97,21 @@ def main():
             alerts.append(f"\n{alert_msg}")
 
     if alerts:
-        title = "StockPulse ⚡ Alerts"
-        message = '\n'.join(alerts)
-        send_pushover_notification(title, message, config)
+        # Split alerts into batches of 3 to avoid notification size limits
+        batch_size = 3
+        for i in range(0, len(alerts), batch_size):
+            batch = alerts[i:i + batch_size]
+            batch_number = (i // batch_size) + 1
+            total_batches = (len(alerts) + batch_size - 1) // batch_size
+            
+            # Add batch info if multiple batches
+            if total_batches > 1:
+                title = f"StockPulse ⚡ Alerts ({batch_number}/{total_batches})"
+            else:
+                title = "StockPulse ⚡ Alerts"
+            
+            message = '\n'.join(batch)
+            send_pushover_notification(title, message, config)
 
 if __name__ == "__main__":
     main()
